@@ -1,4 +1,4 @@
-
+require "util"
 
 function on_train_changed_state_Raphiki(event)
 	log(serpent.block(defines.train_state.wait_station .. " => " .. case[event.train.state]))
@@ -48,6 +48,14 @@ end
 
 
 function goToRefuel(train)
-	log(serpent.block(train.schedule))
-
+	--log(serpent.block(train.schedule))
+	local newSchedule = util.table.deepcopy(train.schedule)
+	for k, v in pairs(train.schedule.records) do
+			if(v.station == "Plein") then
+				log("Change scheduled stop from \"" .. serpent.block(train.schedule.records[train.schedule.current].station) .. "\" to \"" .. train.schedule.records[k].station .. "\"")
+				newSchedule.current = k
+				train.schedule = newSchedule
+				return
+			end
+	end
 end
