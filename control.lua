@@ -51,7 +51,9 @@ function locomotiveNeedRefuel(locomotive)
 	local fuelCount = 0
 	local fuel = locomotive.get_fuel_inventory()
 	for k, v in pairs(fuel.get_contents()) do
-		fuelCount = fuelCount + fuelBase[k] * v
+		local coeff = fuelBase[k];
+		if coeff == nill then  coeff = 1; end;
+		fuelCount = fuelCount + coeff * v
     end
 	if fuelCount < 60 then
 		return true
