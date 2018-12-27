@@ -1,7 +1,6 @@
 require "util"
 
 function on_train_changed_state_Raphiki(event)
-	log("old state = " .. case[event.old_state] .. " => new state = " .. case[event.train.state] .. " => current record => " .. getCurrentRecord(event.train).station)
 
 	-- On ne repath que si l'on quitte une station
 	if event.old_state ~= defines.train_state.wait_station then
@@ -13,6 +12,8 @@ function on_train_changed_state_Raphiki(event)
 		return
 	end
 	
+	log("old state = " .. case[event.old_state] .. " => new state = " .. case[event.train.state] .. " => current record => " .. getCurrentRecord(event.train).station)
+		
 	if trainNeedRefuel(event.train) then
 		goToRefuel(event.train)
 	elseif isGoingToRefuelStation(event.train) then
