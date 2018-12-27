@@ -8,6 +8,11 @@ function on_train_changed_state_Raphiki(event)
 		return
 	end
 
+	-- Si pas de path, pas de mods
+	if event.train.schedule == nil then
+		return
+	end
+	
 	if trainNeedRefuel(event.train) then
 		goToRefuel(event.train)
 	elseif isGoingToRefuelStation(event.train) then
