@@ -1,7 +1,6 @@
 require "util"
 
 function on_train_changed_state_Raphiki(event)
-
 	-- On ne repath que si l'on quitte une station
 	if event.old_state ~= defines.train_state.wait_station then
 		return
@@ -11,9 +10,13 @@ function on_train_changed_state_Raphiki(event)
 	if event.train.schedule == nil then
 		return
 	end
-	
-	log("old state = " .. case[event.old_state] .. " => new state = " .. case[event.train.state] .. " => current record => " .. getCurrentRecord(event.train).station)
-		
+
+	log(
+		"old state = " ..
+			case[event.old_state] ..
+				" => new state = " .. case[event.train.state] .. " => current record => " .. getCurrentRecord(event.train).station
+	)
+
 	if trainNeedRefuel(event.train) then
 		goToRefuel(event.train)
 	elseif isGoingToRefuelStation(event.train) then
@@ -23,9 +26,8 @@ end
 
 script.on_event(defines.events.on_train_changed_state, on_train_changed_state_Raphiki)
 
-
 case = {
-	[defines.train_state.on_the_path]	= "Normal state -- following the path.",
+	[defines.train_state.on_the_path] = "Normal state -- following the path.",
 	[defines.train_state.path_lost] = "Had path and lost it -- must stop.",
 	[defines.train_state.no_schedule] = "Doesn't have anywhere to go.",
 	[defines.train_state.no_path] = "Has no path and is stopped.",
@@ -36,8 +38,8 @@ case = {
 	[defines.train_state.manual_control_stop] = "Switched to manual control and has to stop.",
 	[defines.train_state.manual_control] = "Can move if user explicitly sits in and rides the train."
 }
-	
-fuelBase = { ["nuclear-fuel"] = 50, ["coal"] = 1, ["solid-fuel"] = 1 }
+
+fuelBase = {["nuclear-fuel"] = 50, ["coal"] = 1, ["solid-fuel"] = 1}
 
 function getCurrentRecord(train)
 	--log(debug.traceback())
@@ -57,17 +59,18 @@ function locomotiveNeedRefuel(locomotive)
 	local fuelCount = 0
 	local fuel = locomotive.get_fuel_inventory()
 	for k, v in pairs(fuel.get_contents()) do
-		local coeff = fuelBase[k];
-		if coeff == nill then  coeff = 1; end;
+		local coeff = fuelBase[k]
+		if coeff == nill then
+			coeff = 1
+		end
 		fuelCount = fuelCount + coeff * v
-    end
+	end
 	if fuelCount < 60 then
 		return true
 	else
 		return false
 	end
 end
-
 
 function goToRefuel(train)
 	--log(serpent.block(train.schedule))
@@ -76,13 +79,16 @@ function goToRefuel(train)
 	end
 	local newSchedule = util.table.deepcopy(train.schedule)
 	for k, v in pairs(train.schedule.records) do
-			if(v.station == "Plein") then
-				log("Change scheduled stop from " .. serpent.block(getCurrentRecord(train).station) .. " to " .. train.schedule.records[k].station)
-				newSchedule.current = k
-				train.schedule = newSchedule
-				train.recalculate_path(true)
-				return
-			end
+		if (v.station == "Plein") then
+			log(
+				"Change scheduled stop from " ..
+					serpent.block(getCurrentRecord(train).station) .. " to " .. train.schedule.records[k].station
+			)
+			newSchedule.current = k
+			train.schedule = newSchedule
+			train.recalculate_path(true)
+			return
+		end
 	end
 end
 
@@ -97,7 +103,10 @@ function goToNextStation(train)
 	if newSchedule.records[newSchedule.current] == nil then
 		newSchedule.current = 1
 	end
-	log("Arrêt " .. getCurrentRecord(train).station .. " annulé et remplacé par " .. newSchedule.records[newSchedule.current].station)
+	log(
+		"Arrêt " ..
+			getCurrentRecord(train).station .. " annulé et remplacé par " .. newSchedule.records[newSchedule.current].station
+	)
 	train.schedule = newSchedule
 	train.recalculate_path(true)
 end
