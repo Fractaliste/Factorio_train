@@ -1,16 +1,52 @@
 require "util"
 
+function on_nth_tick_Raphiki(event)
+	for k, l in pairs(game.surfaces[1].find_entities_filtered({name = "locomotive"})) do
+		if not isGoingToRefuelStation(l.train) and not trainNeedRefuel(l.train) then
+			l.train.schedule = removeRefuelingStop(l.train.schedule)
+		end
+	end
+end
+
+function removeRefuelingStop(schedule)
+	log(serpent.block(schedule))
+	if (schedule == nil or #schedule.records == 0) then
+		return
+	end
+
+	local newCurrent = schedule.current
+	local removedItems = 0
+	local newSchedule = util.table.deepcopy(schedule)
+	for k, v in pairs(schedule.records) do
+		if (v.station == "Plein") then
+			if (k < schedule.current) then
+				newCurrent = newCurrent - 1
+			end
+			table.remove(newSchedule.records, k - removedItems)
+			removedItems = removedItems + 1
+		end
+	end
+	newSchedule.current = newCurrent
+	return newSchedule
+end
+
 function on_train_changed_state_Raphiki(event)
-	-- On ne repath que si l'on quitte une station
-	if event.old_state ~= defines.train_state.wait_station then
+	if event.train.schedule == nil or event.train.manual_mode then
+		-- Si pas de path ou mode manuel, pas de mods
 		return
+	elseif event.old_state == defines.train_state.wait_station then
+		-- On repath au départ de la dernière station dans la majorité des cas
+		checkForRefueling(event)
+	elseif #event.train.schedule.records == 1 and not isGoingToRefuelStation(event.train) then
+		-- Pour les trains n'ayant qu'une station de prévue pour l'instant on autorise le refueling quelque soit le state
+		checkForRefueling(event)
+	else
+		-- log(serpent.block(case[event.old_state]))
+		-- log(serpent.block(event))
 	end
+end
 
-	-- Si pas de path, pas de mods
-	if event.train.schedule == nil then
-		return
-	end
-
+function checkForRefueling(event)
 	log(
 		"old state = " ..
 			case[event.old_state] ..
@@ -19,12 +55,11 @@ function on_train_changed_state_Raphiki(event)
 
 	if trainNeedRefuel(event.train) then
 		goToRefuel(event.train)
-	elseif isGoingToRefuelStation(event.train) then
-		goToNextStation(event.train)
 	end
 end
 
 script.on_event(defines.events.on_train_changed_state, on_train_changed_state_Raphiki)
+script.on_nth_tick(60 * 5, on_nth_tick_Raphiki)
 
 case = {
 	[defines.train_state.on_the_path] = "Normal state -- following the path.",
@@ -41,6 +76,13 @@ case = {
 
 fuelBase = {["nuclear-fuel"] = 50, ["coal"] = 1, ["solid-fuel"] = 1}
 
+refuelingStationScheduleRecord = {
+	station = "Plein",
+	wait_conditions = {
+		{type = "inactivity", compare_type = "and", ticks = 60 * 5}
+	}
+}
+
 function getCurrentRecord(train)
 	--log(debug.traceback())
 	return train.schedule.records[train.schedule.current]
@@ -48,6 +90,11 @@ end
 
 function trainNeedRefuel(train)
 	for k, l in pairs(train.locomotives.front_movers) do
+		if locomotiveNeedRefuel(l) then
+			return true
+		end
+	end
+	for k, l in pairs(train.locomotives.back_movers) do
 		if locomotiveNeedRefuel(l) then
 			return true
 		end
@@ -73,40 +120,15 @@ function locomotiveNeedRefuel(locomotive)
 end
 
 function goToRefuel(train)
-	--log(serpent.block(train.schedule))
-	if isGoingToRefuelStation(train) then
-		return
-	end
-	local newSchedule = util.table.deepcopy(train.schedule)
-	for k, v in pairs(train.schedule.records) do
-		if (v.station == "Plein") then
-			log(
-				"Change scheduled stop from " ..
-					serpent.block(getCurrentRecord(train).station) .. " to " .. train.schedule.records[k].station
-			)
-			newSchedule.current = k
-			train.schedule = newSchedule
-			train.recalculate_path(true)
-			return
-		end
-	end
+	log("Change scheduled stop from " .. serpent.block(getCurrentRecord(train).station) .. " to refueling station")
+
+	newSchedule = removeRefuelingStop(train.schedule)
+	table.insert(newSchedule.records, newSchedule.current, refuelingStationScheduleRecord)
+	train.schedule = newSchedule
+	train.recalculate_path(true)
 end
 
 function isGoingToRefuelStation(train)
 	--log("isGoingToRefuelStation")
-	return getCurrentRecord(train).station == "Plein"
-end
-
-function goToNextStation(train)
-	local newSchedule = util.table.deepcopy(train.schedule)
-	newSchedule.current = train.schedule.current + 1
-	if newSchedule.records[newSchedule.current] == nil then
-		newSchedule.current = 1
-	end
-	log(
-		"Arrêt " ..
-			getCurrentRecord(train).station .. " annulé et remplacé par " .. newSchedule.records[newSchedule.current].station
-	)
-	train.schedule = newSchedule
-	train.recalculate_path(true)
+	return train.schedule == nil or getCurrentRecord(train).station == "Plein"
 end
