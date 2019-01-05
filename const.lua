@@ -1,5 +1,6 @@
 cache = {}
 
+-- Récupéré depuis le wiki
 case = {
 	[defines.train_state.on_the_path] = "Normal state -- following the path.",
 	[defines.train_state.path_lost] = "Had path and lost it -- must stop.",
@@ -13,11 +14,9 @@ case = {
 	[defines.train_state.manual_control] = "Can move if user explicitly sits in and rides the train."
 }
 
-fuelBase = {["nuclear-fuel"] = 50, ["coal"] = 1, ["solid-fuel"] = 1}
-
 refuelingStationScheduleRecord = {
 	station = nil,
 	wait_conditions = {
-		{type = "inactivity", compare_type = "and", ticks = 60 * 5}
+		{type = "inactivity", compare_type = "and", ticks = 60 * 3}
 	}
 }

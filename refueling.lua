@@ -39,8 +39,7 @@ Refueling = {
     end
 }
 
-
-removeRefuelingStop= function (schedule)
+removeRefuelingStop = function(schedule)
     if (schedule == nil or #schedule.records == 0) then
         return
     end
@@ -49,7 +48,7 @@ removeRefuelingStop= function (schedule)
     local removedItems = 0
     local newSchedule = util.table.deepcopy(schedule)
     for k, v in pairs(schedule.records) do
-        if (v.station == "Plein") then
+        if (v.station == cache["refueling_station_name"]) then
             if (k < schedule.current) then
                 newCurrent = newCurrent - 1
             end
@@ -61,7 +60,7 @@ removeRefuelingStop= function (schedule)
     return newSchedule
 end
 
-checkForRefueling= function (event)
+checkForRefueling = function(event)
     log(
         "old state = " ..
             case[event.old_state] ..
@@ -74,12 +73,12 @@ checkForRefueling= function (event)
     end
 end
 
-getCurrentRecord= function (train)
+getCurrentRecord = function(train)
     --log(debug.traceback())
     return train.schedule.records[train.schedule.current]
 end
 
-trainNeedRefuel= function (train)
+trainNeedRefuel = function(train)
     for k, l in pairs(train.locomotives.front_movers) do
         if locomotiveNeedRefuel(l) then
             return true
@@ -93,26 +92,25 @@ trainNeedRefuel= function (train)
     return false
 end
 
-locomotiveNeedRefuel= function (locomotive)
+locomotiveNeedRefuel = function(locomotive)
     local fuelCount = 0
     local fuel = locomotive.get_fuel_inventory()
     for k, v in pairs(fuel.get_contents()) do
-        local coeff = fuelBase[k]
+        local coeff = cache["refueling_coeff"][k]
         if coeff == nill then
             coeff = 1
         end
         fuelCount = fuelCount + coeff * v
     end
-    if fuelCount < 60 then
+    -- debug("Décision : " .. tostring(fuelCount .. "/" .. tostring(cache["refueling_cutoff"])))
+    if fuelCount < cache["refueling_cutoff"] then
         return true
     else
         return false
     end
 end
 
-
-
-goToRefuel = function (train)
+goToRefuel = function(train)
     log("Change scheduled stop from " .. serpent.block(getCurrentRecord(train).station) .. " to refueling station")
 
     newSchedule = removeRefuelingStop(train.schedule) -- Ne fonctionne pas ????
@@ -121,7 +119,7 @@ goToRefuel = function (train)
     train.recalculate_path(true)
 end
 
-isGoingToRefuelStation= function (train)
+isGoingToRefuelStation = function(train)
     --log("isGoingToRefuelStation")
-    return train.schedule == nil or getCurrentRecord(train).station == "Plein"
+    return train.schedule == nil or getCurrentRecord(train).station == cache["refueling_station_name"]
 end
