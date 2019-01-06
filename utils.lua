@@ -22,6 +22,9 @@ function init_cache()
     cache["refueling_coeff"]["rocket-fuel"] = settings.global["raphikitrain_refueling_rocket-fuel_coeff"].value
     cache["refueling_coeff"]["nuclear-fuel"] = settings.global["raphikitrain_refueling_nuclear-fuel_coeff"].value
 
+    -- Autoschedule
+    cache["autoschedule_enabled"] = settings.global["raphikitrain_autoschedule_enabled"].value
+
     -- Helper
     debug(cache)
 end
