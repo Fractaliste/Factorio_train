@@ -1,6 +1,3 @@
-require "util"
-require "rutils"
-require "const"
 
 -- Fonctions locales
 local checkForRefueling
@@ -61,12 +58,12 @@ removeRefuelingStop = function(schedule)
 end
 
 checkForRefueling = function(event)
-    log(
-        "old state = " ..
-            case[event.old_state] ..
-                " => new state = " ..
-                    case[event.train.state] .. " => current record => " .. getCurrentRecord(event.train).station
-    )
+    -- debug(
+    --     "old state = " ..
+    --         case[event.old_state] ..
+    --             " => new state = " ..
+    --                 case[event.train.state] .. " => current record => " .. getCurrentRecord(event.train).station
+    -- )
 
     if trainNeedRefuel(event.train) then
         goToRefuel(event.train)
