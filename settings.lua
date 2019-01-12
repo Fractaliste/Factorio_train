@@ -69,13 +69,13 @@ data:extend(
             setting_type = "runtime-global",
             default_value = 100,
             order = "l8"
-        -- },
-        -- {
-        --     type = "bool-setting",
-        --     name = "raphikitrain_autoschedule_enabled",
-        --     setting_type = "runtime-global",
-        --     default_value = false,
-        --     order = "q"
+        },
+        {
+            type = "bool-setting",
+            name = "raphikitrain_autoschedule_enabled",
+            setting_type = "runtime-global",
+            default_value = false,
+            order = "q"
         }
     }
 )
