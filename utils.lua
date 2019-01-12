@@ -24,6 +24,7 @@ function init_cache()
 
     -- Autoschedule
     cache["autoschedule_enabled"] = settings.global["raphikitrain_autoschedule_enabled"].value
+    cache["autoschedule_parking_name"] = settings.global["raphikitrain_autoschedule_parking_name"].value
 
     -- Helper
     debug(cache)

@@ -108,7 +108,7 @@ locomotiveNeedRefuel = function(locomotive)
 end
 
 goToRefuel = function(train)
-    log("Change scheduled stop from " .. serpent.block(getCurrentRecord(train).station) .. " to refueling station")
+    -- log("Change scheduled stop from " .. serpent.block(getCurrentRecord(train).station) .. " to refueling station")
 
     newSchedule = removeRefuelingStop(train.schedule) -- Ne fonctionne pas ????
     table.insert(newSchedule.records, newSchedule.current, refuelingStationScheduleRecord)

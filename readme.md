@@ -1,5 +1,4 @@
-
 # Refueling
-This mods auto redirect to "Plein" (it's configurable le since 0.16.3) station when refueling is needed.
+This mods auto skip station named "Plein" (it's configurable le since 0.16.3) if it does not need refueling, and auto redirect to "Plein" station when refueling is needed.
 
-For now you still need to manually add the record "Plein" into yours train's schedules, work in progress is about preventing it.
+Since 0.16.3 you don't need anymore to manually initiate to your train a station schedule to "Plein" station, it is automatically added (and removed) when needed.

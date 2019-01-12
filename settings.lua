@@ -75,7 +75,13 @@ data:extend(
             name = "raphikitrain_autoschedule_enabled",
             setting_type = "runtime-global",
             default_value = false,
-            order = "q"
-        }
+            order = "qa"
+        } ,{
+            type = "string-setting",
+            name = "raphikitrain_autoschedule_parking_name",
+            setting_type = "runtime-global",
+            default_value = "Plein",
+            order = "qb"
+        },
     }
 )
