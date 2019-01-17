@@ -1,47 +1,86 @@
 local stations = {}
 local trains = {}
 
-local isElligibleStation
 local isElligibleName
 local createName
+
+local copingStationsBuffer = {}
 
 local managedStationColor = {g = 1, a = 0.5}
 local unManagedStationColor = {b = 1, a = 0.5}
 Autoscheduling = {
     onRename = function(event)
-        if (event.name == defines.events.on_entity_renamed) then
-            destEntity = event.entity
-            oldName = event.old_name
-        else
+        if (event.name == defines.events.on_pre_entity_settings_pasted) then
+            if (event.destination.name ~= "train-stop") then
+                -- On ne s'occupe que des stations
+                return
+            end -- Nécessaire pour avoir accès à l'ancien nom en cas de copier/coller
+            if (copingStationsBuffer[event.destination.backer_name] == nil) then
+                copingStationsBuffer[event.destination.backer_name] = {}
+            end
+            table.insert(copingStationsBuffer[event.destination.backer_name], event.destination)
+            return
+        elseif (event.name == defines.events.on_entity_settings_pasted) then
+            -- En cas de copier/coller de stations
+            if (event.destination.name ~= "train-stop") then
+                -- On ne s'occupe que des stations
+                return
+            end
+            for k, v in pairs(copingStationsBuffer) do
+                for _, vv in pairs(copingStationsBuffer) do
+                    if vv == event.destination then
+                        copingStationsBuffer[k][_] = nil
+                        station_entity = event.destination
+                        old_name = k
+                        break
+                    end
+                end
+            end
+        elseif (event.name == defines.events.on_entity_renamed) then
+            -- En cas de renommage explicite
+            if (event.entity.name ~= "train-stop") then
+                -- On ne s'occupe que des stations
+                return
+            end
+            station_entity = event.entity
+            old_name = event.old_name
+        end
+
+        if (station_entity == nil or old_name == nil) then
+            debug("Erreur d'event ne gérant pas correctement le rename")
+            debug(event)
+            return
         end
 
         -- Est-ce que la station appartient au réseau ?
-        if isElligibleStation(event.entity) then
+        if isElligibleName(station_entity.backer_name) then
             -- Si la station est déjà managée c'est qu'on vient sûrement de la renommer, il faut donc couper cours pour éviter une récursion infinie de renommage
-            if isSamePosition(stations[event.entity.backer_name], event.entity) then
+            if isSamePosition(stations[station_entity.backer_name], station_entity) then
                 return
             end
 
-            newName = createName(event.entity.backer_name)
-            stations[newName] = event.entity
-            event.entity.backer_name = newName
+            newName = createName(station_entity.backer_name)
+            stations[newName] = station_entity
+            station_entity.backer_name = newName
 
-            event.entity.color = managedStationColor
+            station_entity.color = managedStationColor
         else
-            event.entity.color = unManagedStationColor
+            station_entity.color = unManagedStationColor
         end
 
         -- Est-ce que la station appartenait au réseau ?
-        if isElligibleName(event.old_name) then
-            stations[event.old_name] = nil
+        if isElligibleName(old_name) then
+            stations[old_name] = nil
         end
     end,
     onBuilt = function(event)
+        created_entity = event.created_entity
+
         -- Si le nom existe déjà il faudrait en recréer un, mais c'est pas avant la 0.17 normallement
-        if isElligibleStation(destEntity) then
+        if created_entity.name == "train-stop" and isElligibleName(created_entity.backer_name) then
             destEntity.color = managedStationColor
         else
-            event.created_entity.color = unManagedStationColor
+            created_entity.color = unManagedStationColor
         end
     end,
     onRemoved = function(event)
@@ -75,15 +114,7 @@ Autoscheduling = {
     end
 }
 
--- Retourne true si l'entité est une station, et est dans le scope de l'autoscheduling
-isElligibleStation = function(entity)
-    if (entity.name == "train-stop") then
-        return isElligibleName(entity.backer_name)
-    else
-        return false
-    end
-end
-
+-- Retourne true si l'entité possède un nom correspondant au pattern de l'autoscheduling
 isElligibleName = function(name)
     return string.find(name, ".+#[io].+") ~= nil
 end
