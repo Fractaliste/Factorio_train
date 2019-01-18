@@ -2,6 +2,11 @@ function debug(o)
     log(serpent.block(o))
 end
 
+function getCurrentRecord(train)
+    --log(debug.traceback())
+    return train.schedule.records[train.schedule.current]
+end
+
 function init_cache()
     -- Station de refueling
     cache["refueling_station_name"] = settings.global["raphikitrain_refueling_station_name"].value

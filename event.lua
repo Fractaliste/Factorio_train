@@ -3,6 +3,20 @@ require "autoscheduling"
 
 init_cache()
 
+script.on_init(
+    function()
+        global.s = {}
+        global.t = {idle = {}}
+    end
+)
+script.on_load(
+    function()
+        if cache["autoschedule_enabled"] then
+            Autoscheduling.onLoad()
+        end
+    end
+)
+
 script.on_event(
     defines.events.on_train_changed_state,
     function(event)

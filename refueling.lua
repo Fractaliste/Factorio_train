@@ -1,7 +1,6 @@
 
 -- Fonctions locales
 local checkForRefueling
-local getCurrentRecord
 local getRefuelingStationScheduleRecord
 local goToRefuel
 local isGoingToRefuelStation
@@ -68,11 +67,6 @@ checkForRefueling = function(event)
     if trainNeedRefuel(event.train) then
         goToRefuel(event.train)
     end
-end
-
-getCurrentRecord = function(train)
-    --log(debug.traceback())
-    return train.schedule.records[train.schedule.current]
 end
 
 trainNeedRefuel = function(train)
