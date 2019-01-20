@@ -5,7 +5,7 @@ init_cache()
 
 script.on_init(
     function()
-        global.s = {}
+        global.s = {nextInt = 0, liste = {}}
         global.t = {idle = {}}
     end
 )
@@ -13,6 +13,7 @@ script.on_load(
     function()
         if cache["autoschedule_enabled"] then
             Autoscheduling.onLoad()
+            -- debug(global)
         end
     end
 )

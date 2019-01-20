@@ -1,6 +1,6 @@
 do
     local stations
-    local trains 
+    local trains
 
     local isElligibleName
     local createName
@@ -13,7 +13,7 @@ do
     Autoscheduling = {
         onLoad = function()
             stations = global.s
-            stations = global.t
+            trains = global.t
         end,
         onRename = function(event)
             if (event.name == defines.events.on_pre_entity_settings_pasted) then
@@ -61,12 +61,12 @@ do
             -- Est-ce que la station appartient au réseau ?
             if isElligibleName(station_entity.backer_name) then
                 -- Si la station est déjà managée c'est qu'on vient sûrement de la renommer, il faut donc couper cours pour éviter une récursion infinie de renommage
-                if isSamePosition(stations[station_entity.backer_name], station_entity) then
+                if isSamePosition(stations.liste[station_entity.backer_name], station_entity) then
                     return
                 end
 
                 newName = createName(station_entity.backer_name)
-                stations[newName] = station_entity
+                stations.liste[newName] = station_entity
                 station_entity.backer_name = newName
 
                 station_entity.color = managedStationColor
@@ -76,7 +76,7 @@ do
 
             -- Est-ce que la station appartenait au réseau ?
             if isElligibleName(old_name) then
-                stations[old_name] = nil
+                stations.liste[old_name] = nil
             end
         end,
         onBuilt = function(event)
@@ -113,7 +113,7 @@ do
                 debug(stations)
                 -- Vérifier s'il faut recommencer leur mission
                 -- Sinon vérifier s'il faut leur attribuer une nouvelle mission
-                for _, s in pairs(stations) do
+                for _, s in pairs(stations.liste) do
                     debug(s.get_train_stop_trains())
                 end
 
@@ -154,12 +154,14 @@ do
     end
 
     createName = function(baseName)
+        i = stations.nextInt
+        stations.nextInt = i + 1
         -- S'il y a déjà deux dièses
         if string.find(baseName, "#.*#") then
-            return string.gsub(baseName, "(#.-#).*", "%1" .. math.random(100000))
+            return string.gsub(baseName, "(#.-#).*", "%1" .. i)
         else
             -- Sinon on est dans le cas classique où on se contente d'une concaténation pour rajouter le second fameux dièse
-            return baseName .. "#" .. math.random(100000)
+            return baseName .. "#" .. i
         end
     end
 end
