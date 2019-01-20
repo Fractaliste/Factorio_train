@@ -32,5 +32,31 @@ function init_cache()
     cache["autoschedule_parking_name"] = settings.global["raphikitrain_autoschedule_parking_name"].value
 
     -- Helper
-    debug(cache)
+    -- debug(cache)
+end
+
+Fifo = {}
+function Fifo.new()
+    return {first = 0, last = -1}
+end
+
+function Fifo.pushright(Fifo, value)
+    local last = Fifo.last + 1
+    Fifo.last = last
+    Fifo[last] = value
+end
+
+function Fifo.popleft(Fifo)
+    local first = Fifo.first
+    if first > Fifo.last then
+        error("Fifo is empty")
+    end
+    local value = Fifo[first]
+    Fifo[first] = nil -- to allow garbage collection
+    Fifo.first = first + 1
+    return value
+end
+
+function Fifo.isEmpty()
+    return first > Fifo.last
 end
