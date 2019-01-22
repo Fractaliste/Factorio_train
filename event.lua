@@ -5,7 +5,7 @@ init_cache()
 
 script.on_init(
     function()
-        global.s = {nextInt = 0, liste = {}}
+        global.s = {nextInt = 0, fifo = Fifo.new(), index = {}}
         global.t = {idle = {}}
     end
 )
@@ -13,7 +13,7 @@ script.on_load(
     function()
         if cache["autoschedule_enabled"] then
             Autoscheduling.onLoad()
-            -- debug(global)
+            debug(global)
         end
     end
 )
@@ -31,6 +31,7 @@ script.on_nth_tick(60 * 5, Refueling.cleanTrains)
 script.on_event(defines.events.on_runtime_mod_setting_changed, init_cache)
 
 if cache["autoschedule_enabled"] then
+    script.on_nth_tick(60 * 10, Autoscheduling.onTraiterListeAttente)
     script.on_event(defines.events.on_entity_renamed, Autoscheduling.onRename)
     script.on_event(defines.events.on_entity_settings_pasted, Autoscheduling.onRename)
     script.on_event(defines.events.on_pre_entity_settings_pasted, Autoscheduling.onRename)

@@ -1,4 +1,4 @@
-global.s = {nextInt = 0, liste = {}}
+global.s = {nextInt = 0, fifo = {first = 0, last = -1}, index = {}}
 global.t = {idle = {}}
-debug("Migration done")
-debug(global)
+log("Migration done")
+log(serpent.block(global))
