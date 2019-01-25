@@ -18,42 +18,9 @@ do
             trains = global.t
         end,
         onRename = function(event)
-            debug(
-                "onRename",
-                "pre " .. tostring(event.name == defines.events.on_pre_entity_settings_pasted),
-                "pasted " .. tostring(event.name == defines.events.on_entity_settings_pasted),
-                "renamed " .. tostring(event.name == defines.events.on_entity_renamed),
-                event
-            )
             local old_name = nil
             local station_entity = nil
-            if (event.name == defines.events.on_pre_entity_settings_pasted) then
-                if (event.destination.name ~= "train-stop") then
-                    -- On ne s'occupe que des stations
-                    return
-                end -- Nécessaire pour avoir accès à l'ancien nom en cas de copier/coller
-                if (copingStationsBuffer[event.destination.backer_name] == nil) then
-                    copingStationsBuffer[event.destination.backer_name] = {}
-                end
-                table.insert(copingStationsBuffer[event.destination.backer_name], event.destination)
-                return
-            elseif (event.name == defines.events.on_entity_settings_pasted) then
-                -- En cas de copier/coller de stations
-                if (event.destination.name ~= "train-stop") then
-                    -- On ne s'occupe que des stations
-                    return
-                end
-                for k, v in pairs(copingStationsBuffer) do
-                    for _, vv in pairs(v) do
-                        if vv == event.destination then
-                            copingStationsBuffer[k][_] = nil
-                            station_entity = event.destination
-                            old_name = k
-                            break
-                        end
-                    end
-                end
-            elseif (event.name == defines.events.on_entity_renamed) then
+            if (event.name == defines.events.on_entity_renamed) then
                 -- En cas de renommage explicite
                 if (event.entity.name ~= "train-stop") then
                     -- On ne s'occupe que des stations
