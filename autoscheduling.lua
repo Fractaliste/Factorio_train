@@ -18,6 +18,13 @@ do
             trains = global.t
         end,
         onRename = function(event)
+            debug(
+                "onRename",
+                "pre " .. tostring(event.name == defines.events.on_pre_entity_settings_pasted),
+                "pasted " .. tostring(event.name == defines.events.on_entity_settings_pasted),
+                "renamed " .. tostring(event.name == defines.events.on_entity_renamed),
+                event
+            )
             local old_name = nil
             local station_entity = nil
             if (event.name == defines.events.on_pre_entity_settings_pasted) then
@@ -37,7 +44,7 @@ do
                     return
                 end
                 for k, v in pairs(copingStationsBuffer) do
-                    for _, vv in pairs(copingStationsBuffer) do
+                    for _, vv in pairs(v) do
                         if vv == event.destination then
                             copingStationsBuffer[k][_] = nil
                             station_entity = event.destination
@@ -61,9 +68,11 @@ do
                 debug(event)
                 return
             end
-            if (i > 1) then
-                return
-            end
+            -- debug(station_entity.backer_name, old_name)
+            -- if (i > 10) then
+            --     debug("i max atteint !")
+            --     return
+            -- end
 
             -- Est-ce que la station appartient au réseau ?
             if isElligibleName(station_entity.backer_name) then
@@ -73,7 +82,7 @@ do
                 end
                 i = i + 1
                 newName = createName(station_entity.backer_name)
-                indexStation(station, newName)
+                indexStation(station_entity, newName)
                 station_entity.backer_name = newName
 
                 station_entity.color = managedStationColor
@@ -99,6 +108,8 @@ do
             end
         end,
         onRemoved = function(event)
+            global.s = {nextInt = 0, fifo = {first = 0, last = -1}, index = {}}
+            global.t = {idle = {}}
             debug("removed")
             -- debug(stations)
         end,
@@ -167,8 +178,9 @@ do
         local i = stations.nextInt
         stations.nextInt = i + 1
         -- S'il y a déjà deux dièses
-        if string.find(baseName, "#.*#") then
-            return string.gsub(baseName, "(#.-#).*", "%1" .. i)
+        -- debug("createName", baseName:find("#.*#"))
+        if baseName:find("#.*#") then
+            return baseName:gsub("(#.-#).*", "%1" .. i)
         else
             -- Sinon on est dans le cas classique où on se contente d'une concaténation pour rajouter le second fameux dièse
             return baseName .. "#" .. i
@@ -176,7 +188,6 @@ do
     end
 
     indexStation = function(station, name)
-        debug("indexing " .. name)
         local debut, fin = name:find("#.*#")
         local id = name:sub(debut + 2, fin - 1)
         if stations.index[id] == nil then
