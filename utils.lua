@@ -1,5 +1,20 @@
-function debug(o)
-    log(serpent.block(o))
+function debug(...)
+    local args = {...}
+    local printResult
+    for i, v in ipairs(args) do
+        local stringValue
+        if type(v) == "table" then
+            stringValue = i .. " =>\t" .. serpent.block(v)
+        else
+            stringValue = i .. " =>\t" .. tostring(v)
+        end
+        if i == 1 then
+            printResult = "\n" .. stringValue
+        else
+            printResult = printResult .. "\n" .. stringValue
+        end
+    end
+    log(printResult)
 end
 
 function getCurrentRecord(train)
